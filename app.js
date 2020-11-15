@@ -48,6 +48,7 @@ app.get('/publicPage', function(req, res) {
 });
 
 app.post('/user/signup', function(req, res) {
+    var re = {};
     if (!util.validateEmail(req.body.email) || util.isEmpty(req.body.password)) {
         re.status = "error";
         re.reason = "Wrong email/password";
@@ -59,7 +60,6 @@ app.post('/user/signup', function(req, res) {
     var sql = "INSERT into Users (firstName, middleName, lastName, email, password, zipCode, phoneNumber) values (?,?,?,?,?,?,?)";
     var mysql = req.app.get('mysql');
     mysql.pool.query(sql, inserts, function(error, results, fields) {
-        var re = {};
         if (error) {
             console.log(error);
             if (error.errno == 1062) {
@@ -95,6 +95,7 @@ app.post('/user/signup', function(req, res) {
 });
 
 app.post('/shelter/signup', function(req, res) {
+    var re = {};
     if (req.body.shelterName == null) {
         re.status = "error";
         re.reason = "ShelterName cannot be null, please try another one.";
@@ -113,7 +114,6 @@ app.post('/shelter/signup', function(req, res) {
     var sql = "INSERT into Users (shelterName, email, password, zipCode, phoneNumber, isShelter) values (?,?,?,?,?,1)";
     var mysql = req.app.get('mysql');
     mysql.pool.query(sql, inserts, function(error, results, fields) {
-        var re = {};
         if (error) {
             console.log(error);
             if (error.errno == 1062) {
