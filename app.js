@@ -195,7 +195,7 @@ app.get('/user/:id', function(req, res) {
     });
 });
 
-app.get('/user/current', app.oauth.authenticate(), function(req, res) {
+app.get('/current', app.oauth.authenticate(), function(req, res) {
     var token = req.headers.authorization.substring(7);
     mysql.pool.query('SELECT user_id FROM oauth_tokens where access_token=?;', [token], function(err, rows, fields) {
         if (err) {
