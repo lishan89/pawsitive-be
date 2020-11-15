@@ -225,7 +225,7 @@ app.get('/current', app.oauth.authenticate(), function(req, res) {
                 console.log(results[0]);
 
                 re.status = "success";
-                re.data = results;
+                re.data = results[0];
                 res.send(re);
 
             });
