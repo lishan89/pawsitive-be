@@ -144,7 +144,7 @@ app.get('/shelter/:id', function(req, res) {
             res.send('500');
             return;
         }
-        if (rows[0].isShelter == 1) {
+        if (rows.length > 0 && rows[0].isShelter == 1) {
             res.send(rows[0]);
         } else {
             re.status = "error";
@@ -168,7 +168,7 @@ app.get('/user/:id', function(req, res) {
             res.send('500');
             return;
         }
-        if (rows[0].isShelter == 0) {
+        if (rows.length > 0 && rows[0].isShelter == 0) {
             res.send(rows[0]);
         } else {
             re.status = "error";
@@ -191,7 +191,7 @@ app.post('/user/edit/:id', app.oauth.authenticate(), function(req, res) {
             res.send('500');
             return;
         }
-        if (rows[0].user_id == req.params.id) {
+        if (rows.length > 0 && rows[0].user_id == req.params.id) {
             var keys = Object.keys(req.body);
 
             var updates = [];
@@ -243,7 +243,7 @@ app.post('/shelter/edit/:id', app.oauth.authenticate(), function(req, res) {
             res.send('500');
             return;
         }
-        if (rows[0].user_id == req.params.id) {
+        if (rows.length > 0 && rows[0].user_id == req.params.id) {
             var keys = Object.keys(req.body);
 
             var updates = [];
@@ -315,7 +315,7 @@ app.post('/breed/add', app.oauth.authenticate(), function(req, res) {
             res.send('500');
             return;
         }
-        if (rows[0].isAdmin == 1) {
+        if (rows.length > 0 && rows[0].isAdmin == 1) {
             if (req.body.type != "dog" && req.body.type != "cat") {
                 re.status = "error";
                 re.reason = "type only can be dog or cat.";
@@ -382,7 +382,7 @@ app.post('/disposition/add', app.oauth.authenticate(), function(req, res) {
             res.send('500');
             return;
         }
-        if (rows[0].isAdmin == 1) {
+        if (rows.length > 0 && rows[0].isAdmin == 1) {
 
             var inserts = [req.body.dispositionTitle];
             var sql = "insert into Dispositions (dispositionTitle) values (?)";
