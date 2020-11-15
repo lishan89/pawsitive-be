@@ -690,8 +690,7 @@ app.get('/profile/:profileId', function(req, res) {
 
     if (Array.isArray(req.body.disposition)) {
         for (var dis of req.body.disposition) {
-            sql = sql.concat("disposition like '%".concat(dis).
-                "%'' and ")
+            sql = sql.concat("disposition like '%".concat(dis).concat("%' and "));
         }
     }
     sql = sql.slice(0, -4);
