@@ -2,9 +2,9 @@ var express = require('express');
 var mysql = require('./dbcon.js');
 var util = require('./util.js');
 var oauthServer = require('express-oauth-server');
-
+var cors = require('cors');
 var app = express();
-
+app.use(cors());
 
 var bodyParser = require('body-parser');
 var dateFormat = require('dateformat');
