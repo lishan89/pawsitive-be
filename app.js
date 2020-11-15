@@ -96,9 +96,9 @@ app.post('/user/signup', function(req, res) {
 
 app.post('/shelter/signup', function(req, res) {
     var re = {};
-    if (req.body.shelterName == null) {
+    if (util.isEmpty(req.body.shelterName)) {
         re.status = "error";
-        re.reason = "ShelterName cannot be null, please try another one.";
+        re.reason = "ShelterName cannot be null.";
         re.code = 6004;
         res.send(re);
         return;
