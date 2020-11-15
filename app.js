@@ -1,5 +1,6 @@
 var express = require('express');
 var mysql = require('./dbcon.js');
+var util = require('./util.js');
 var oauthServer = require('express-oauth-server');
 
 var app = express();
@@ -47,6 +48,13 @@ app.get('/publicPage', function(req, res) {
 });
 
 app.post('/user/signup', function(req, res) {
+    if (!util.validateEmail(req.body.email) || util.isEmpty(req.body.password)) {
+        re.status = "error";
+        re.reason = "Wrong email/password";
+        re.code = 5001;
+        res.send(re);
+        return;
+    }
     var inserts = [req.body.firstName, req.body.middleName, req.body.lastName, req.body.email, req.body.password, req.body.zipCode, req.body.phoneNumber];
     var sql = "INSERT into Users (firstName, middleName, lastName, email, password, zipCode, phoneNumber) values (?,?,?,?,?,?,?)";
     var mysql = req.app.get('mysql');
@@ -57,14 +65,14 @@ app.post('/user/signup', function(req, res) {
             if (error.errno == 1062) {
                 re.status = "error";
                 re.reason = "Duplicate email, please try another one.";
-                re.code = 5001;
+                re.code = 5002;
                 res.send(re);
                 return;
             }
             if (error.errno == 1048) {
                 re.status = "error";
                 re.reason = "Email cannot be null, please try another one.";
-                re.code = 5002;
+                re.code = 5003;
                 res.send(re);
                 return;
             }
@@ -90,7 +98,14 @@ app.post('/shelter/signup', function(req, res) {
     if (req.body.shelterName == null) {
         re.status = "error";
         re.reason = "ShelterName cannot be null, please try another one.";
-        re.code = 6003;
+        re.code = 6004;
+        res.send(re);
+        return;
+    }
+    if (!util.validateEmail(req.body.email) || util.isEmpty(req.body.password)) {
+        re.status = "error";
+        re.reason = "Wrong email/password";
+        re.code = 6001;
         res.send(re);
         return;
     }
@@ -104,14 +119,14 @@ app.post('/shelter/signup', function(req, res) {
             if (error.errno == 1062) {
                 re.status = "error";
                 re.reason = "Duplicate email, please try another one.";
-                re.code = 6001;
+                re.code = 6002;
                 res.send(re);
                 return;
             }
             if (error.errno == 1048) {
                 re.status = "error";
                 re.reason = "Email cannot be null, please try another one.";
-                re.code = 6002;
+                re.code = 6003;
                 res.send(re);
                 return;
             }
@@ -136,7 +151,7 @@ app.post('/shelter/signup', function(req, res) {
 app.get('/shelter/:id', function(req, res) {
     var re = {};
     var mysql = req.app.get('mysql');
-    mysql.pool.query('SELECT * FROM Users where userID=?;', [req.params.id], function(err, rows, fields) {
+    mysql.pool.query('SELECT userID,email,zipCode,phoneNumber,shelterName FROM Users where userID=?;', [req.params.id], function(err, rows, fields) {
         if (err) {
             console.log(err);
             // next(err);
@@ -160,7 +175,7 @@ app.get('/shelter/:id', function(req, res) {
 app.get('/user/:id', function(req, res) {
     var re = {};
     var mysql = req.app.get('mysql');
-    mysql.pool.query('SELECT * FROM Users where userID=?;', [req.params.id], function(err, rows, fields) {
+    mysql.pool.query('SELECT userID,email,firstName,middleName,lastName,isAdmin,zipCode,phoneNumber FROM Users where userID=?;', [req.params.id], function(err, rows, fields) {
         if (err) {
             console.log(err);
             // next(err);
@@ -177,6 +192,50 @@ app.get('/user/:id', function(req, res) {
             res.send(re);
             return;
         }
+    });
+});
+
+app.get('/user/current', app.oauth.authenticate(), function(req, res) {
+    var token = req.headers.authorization.substring(7);
+    mysql.pool.query('SELECT user_id FROM oauth_tokens where access_token=?;', [token], function(err, rows, fields) {
+        if (err) {
+            console.log(err);
+            // next(err);
+            res.status(500);
+            res.send('500');
+            return;
+        }
+        if (rows.length > 0) {
+            var keys = Object.keys(req.body);
+            var sql = "select userID,email,firstName,middleName,lastName,isAdmin,isShelter,zipCode,phoneNumber,shelterName from Users where userID=?";
+            
+            mysql.pool.query(sql, [rows[0].user_id], function(error, results, fields) {
+                var re = {};
+                if (error || results.length <= 0) {
+                    console.log('this.sql', this.sql);
+                    console.log(error);
+
+                    // next(err);
+                    re.status = "error";
+                    re.reason = "System Error, please try later.";
+                    re.code = 1001;
+                    res.send(re);
+                    return;
+                }
+                console.log(results[0]);
+
+                re.status = "success";
+                re.data = results;
+                res.send(re);
+
+            });
+        } else {
+            res.status(401);
+            res.send('unauthrized');
+
+            return;
+        }
+
     });
 });
 
