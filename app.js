@@ -151,7 +151,7 @@ app.post('/shelter/signup', function(req, res) {
 app.get('/shelter/:id', function(req, res) {
     var re = {};
     var mysql = req.app.get('mysql');
-    mysql.pool.query('SELECT userID,email,zipCode,phoneNumber,shelterName FROM Users where userID=?;', [req.params.id], function(err, rows, fields) {
+    mysql.pool.query('SELECT userID,email,zipCode,phoneNumber,shelterName,isShelter FROM Users where userID=?;', [req.params.id], function(err, rows, fields) {
         if (err) {
             console.log(err);
             // next(err);
@@ -175,7 +175,7 @@ app.get('/shelter/:id', function(req, res) {
 app.get('/user/:id', function(req, res) {
     var re = {};
     var mysql = req.app.get('mysql');
-    mysql.pool.query('SELECT userID,email,firstName,middleName,lastName,isAdmin,zipCode,phoneNumber FROM Users where userID=?;', [req.params.id], function(err, rows, fields) {
+    mysql.pool.query('SELECT userID,email,firstName,middleName,lastName,isAdmin,isShelter,zipCode,phoneNumber FROM Users where userID=?;', [req.params.id], function(err, rows, fields) {
         if (err) {
             console.log(err);
             // next(err);
