@@ -192,11 +192,21 @@ app.post('/user/edit/:id', app.oauth.authenticate(), function(req, res) {
             return;
         }
         if (rows[0].user_id == req.params.id) {
-            var updates = [req.body.firstName, req.body.middleName, req.body.lastName, req.body.email, req.body.password, req.body.zipCode, req.body.phoneNumber, req.params.id];
-            var sql = "update Users set firstName=?, middleName=?, lastName=?, email=?, password=?, zipCode=?, phoneNumber=? where userID=?";
+            var keys = Object.keys(req.body);
+
+            var updates = [];
+            var sql = "update Users set ";
+            for (var key of keys) {
+                sql.concat(key).concat("=?,");
+                updates.push(req.body[key]);
+            }
+            sql = sql.slice(0, -1);
+            sql = sql.concat(" where userID=?;")
+            updates.push(req.params.id);
             mysql.pool.query(sql, updates, function(error, results, fields) {
                 var re = {};
                 if (error) {
+                    console.log('this.sql', this.sql);
                     console.log(error);
 
                     // next(err);
@@ -234,11 +244,21 @@ app.post('/shelter/edit/:id', app.oauth.authenticate(), function(req, res) {
             return;
         }
         if (rows[0].user_id == req.params.id) {
-            var updates = [req.body.shelterName, req.body.email, req.body.password, req.body.zipCode, req.body.phoneNumber, req.params.id];
-            var sql = "update Users set shelterName=?, email=?, password=?, zipCode=?, phoneNumber=? where userID=?";
+            var keys = Object.keys(req.body);
+
+            var updates = [];
+            var sql = "update Users set ";
+            for (var key of keys) {
+                sql.concat(key).concat("=?,");
+                updates.push(req.body[key]);
+            }
+            sql = sql.slice(0, -1);
+            sql = sql.concat(" where userID=?;")
+            updates.push(req.params.id);
             mysql.pool.query(sql, updates, function(error, results, fields) {
                 var re = {};
                 if (error) {
+                    console.log('this.sql', this.sql);
                     console.log(error);
 
                     // next(err);
@@ -306,7 +326,7 @@ app.post('/breed/add', app.oauth.authenticate(), function(req, res) {
             var inserts = [req.body.breedName, req.body.type];
             var sql = "insert into Breeds (breedName, type) values (?,?)";
             mysql.pool.query(sql, inserts, function(error, results, fields) {
-                
+
                 if (error) {
                     console.log(error);
 
@@ -363,11 +383,11 @@ app.post('/disposition/add', app.oauth.authenticate(), function(req, res) {
             return;
         }
         if (rows[0].isAdmin == 1) {
-            
+
             var inserts = [req.body.dispositionTitle];
             var sql = "insert into Dispositions (dispositionTitle) values (?)";
             mysql.pool.query(sql, inserts, function(error, results, fields) {
-                
+
                 if (error) {
                     console.log(error);
 
@@ -396,7 +416,328 @@ app.post('/disposition/add', app.oauth.authenticate(), function(req, res) {
 
 });
 
+app.post('/picture/add', app.oauth.authenticate(), function(req, res) {
+    var re = {};
+    var token = req.headers.authorization.substring(7);
+    mysql.pool.query('SELECT isShelter,userID from Users where userID=(SELECT user_id FROM oauth_tokens where access_token=?);', [token], function(err, rows, fields) {
+        if (err) {
+            console.log(err);
+            // next(err);
+            res.status(500);
+            res.send('500');
+            return;
+        }
+        if (rows.length > 0 && rows[0].isShelter == 1) {
+            mysql.pool.query('SELECT shelterID from profiles where profileID=?;', [req.body.profileID], function(err, profileRows, fields) {
+                if (err) {
+                    console.log(err);
+                    // next(err);
+                    res.status(500);
+                    res.send('500');
+                    return;
+                }
+                if (profileRows.length > 0 && profileRows[0].shelterID == rows[0].userID) {
+                    var inserts = [req.body.picUrl, req.body.profileID];
+                    var sql = "insert into pictures (picUrl, profileID) values (?, ?)";
+                    mysql.pool.query(sql, inserts, function(error, results, fields) {
 
+                        if (error) {
+                            console.log(error);
+
+                            // next(err);
+                            re.status = "error";
+                            re.reason = "System Error, please try later.";
+                            re.code = 1001;
+                            res.send(re);
+                            return;
+                        }
+                        console.log(results);
+
+                        re.status = "success";
+                        re.picID = results.insertId;
+                        res.send(re);
+
+                    });
+                } else {
+                    res.status(401);
+                    res.send('unauthrized');
+                    return;
+                }
+            });
+        } else {
+            res.status(401);
+            res.send('unauthrized');
+
+            return;
+        }
+
+    });
+
+});
+
+app.get('/pictures/:profileId', function(req, res) {
+    var context = {};
+    var mysql = req.app.get('mysql');
+    mysql.pool.query('SELECT * FROM pictures where profileId=?;', [req.params.profileId], function(err, rows, fields) {
+        if (err) {
+            console.log(err);
+            // next(err);
+            res.status(500);
+            res.send('500');
+            return;
+        }
+
+        res.send(rows);
+    });
+});
+
+
+
+app.post('/profile/add', app.oauth.authenticate(), function(req, res) {
+    var re = {};
+    var token = req.headers.authorization.substring(7);
+    mysql.pool.query('SELECT isShelter,userID from Users where userID=(SELECT user_id FROM oauth_tokens where access_token=?);', [token], function(err, rows, fields) {
+        if (err) {
+            console.log(err);
+            // next(err);
+            res.status(500);
+            res.send('500');
+            return;
+        }
+        if (rows.length > 0 && rows[0].isShelter == 1) {
+
+            var inserts = [req.body.petName, req.body.type, req.body.shelterID, req.body.breedID, req.body.description, req.body.disposition];
+            var sql = "insert into profiles (petName, type, shelterID, breedID, description, disposition) values (?, ?, ?, ?, ?, ?)";
+            mysql.pool.query(sql, inserts, function(error, results, fields) {
+
+                if (error) {
+                    console.log(error);
+
+                    // next(err);
+                    re.status = "error";
+                    re.reason = "System Error, please try later.";
+                    re.code = 1001;
+                    res.send(re);
+                    return;
+                }
+                console.log(results);
+
+
+                re.status = "success";
+                re.profileID = results.insertId;
+                res.send(re);
+
+            });
+        } else {
+            res.status(401);
+            res.send('unauthrized');
+            return;
+        }
+
+
+    });
+
+});
+
+
+//update profile, self
+app.post('/profile/edit/:id', app.oauth.authenticate(), function(req, res) {
+    var re = {};
+    var token = req.headers.authorization.substring(7);
+    mysql.pool.query('SELECT isShelter,userID from Users where userID=(SELECT user_id FROM oauth_tokens where access_token=?);', [token], function(err, rows, fields) {
+        if (err) {
+            console.log('this.sql', this.sql);
+            console.log(err);
+            // next(err);
+            res.status(500);
+            res.send('500');
+            return;
+        }
+        if (rows.length > 0 && rows[0].isShelter == 1) {
+            mysql.pool.query('SELECT shelterID from profiles where profileID=?;', [req.params.id], function(err, profileRows, fields) {
+                if (err) {
+                    console.log('this.sql', this.sql);
+                    console.log(err);
+                    // next(err);
+                    res.status(500);
+                    res.send('500');
+                    return;
+                }
+                if (profileRows.length > 0 && profileRows[0].shelterID == rows[0].userID) {
+                    var keys = Object.keys(req.body);
+
+                    var updates = [];
+                    var sql = "update profiles set ";
+                    for (var key of keys) {
+                        sql.concat(key).concat("=?,");
+                        updates.push(req.body[key]);
+                    }
+                    sql = sql.slice(0, -1);
+                    sql = sql.concat(" where profileID=?;")
+                    updates.push(req.params.id);
+                    mysql.pool.query(sql, updates, function(error, results, fields) {
+
+                        if (error) {
+                            console.log('this.sql', this.sql);
+                            console.log(error);
+
+                            // next(err);
+                            re.status = "error";
+                            re.reason = "System Error, please try later.";
+                            re.code = 1001;
+                            res.send(re);
+                            return;
+                        }
+                        console.log(results);
+
+                        re.status = "success";
+                        re.profileID = req.params.id;
+                        res.send(re);
+
+                    });
+                } else {
+                    res.status(401);
+                    res.send('unauthrized');
+                    return;
+                }
+            });
+        } else {
+            res.status(401);
+            res.send('unauthrized');
+
+            return;
+        }
+
+    });
+
+});
+
+//soft delete profile, admin, self
+app.post('/profile/delete/:id', app.oauth.authenticate(), function(req, res) {
+    var re = {};
+    var token = req.headers.authorization.substring(7);
+    mysql.pool.query('SELECT isShelter,isAdmin,userID from Users where userID=(SELECT user_id FROM oauth_tokens where access_token=?);', [token], function(err, rows, fields) {
+        if (err) {
+            console.log('this.sql', this.sql);
+            console.log(err);
+            // next(err);
+            res.status(500);
+            res.send('500');
+            return;
+        }
+        if (rows.length > 0 && (rows[0].isShelter == 1 || rows[0].isAdmin == 1)) {
+            mysql.pool.query('SELECT shelterID from profiles where profileID=?;', [req.params.id], function(err, profileRows, fields) {
+                if (err) {
+                    console.log('this.sql', this.sql);
+                    console.log(err);
+                    // next(err);
+                    res.status(500);
+                    res.send('500');
+                    return;
+                }
+                if (profileRows.length > 0 && (profileRows[0].shelterID == rows[0].userID || rows[0].isAdmin == 1)) {
+                    var keys = Object.keys(req.body);
+
+                    var updates = [req.params.id];
+                    var sql = "update profiles set isDeleted = 1 where profileID=?;";
+
+                    mysql.pool.query(sql, updates, function(error, results, fields) {
+
+                        if (error) {
+                            console.log('this.sql', this.sql);
+                            console.log(error);
+
+                            // next(err);
+                            re.status = "error";
+                            re.reason = "System Error, please try later.";
+                            re.code = 1001;
+                            res.send(re);
+                            return;
+                        }
+                        console.log(results);
+
+                        re.status = "success";
+                        re.profileID = req.params.id;
+                        res.send(re);
+
+                    });
+                } else {
+                    res.status(401);
+                    res.send('unauthrized');
+                    return;
+                }
+            });
+        } else {
+            res.status(401);
+            res.send('unauthrized');
+
+            return;
+        }
+
+    });
+
+});
+
+//get one profile
+app.get('/profile/:profileId', function(req, res) {
+    var keys = Object.keys(req.body.filters);
+    var search = [];
+    var sql = "select * from profiles where ";
+    for (var key of keys) {
+        sql.concat(key).concat("=? and ");
+        search.push(req.body.filters[key]);
+    }
+
+    if (Array.isArray(req.body.disposition)) {
+        for (var dis of req.body.disposition) {
+            sql = sql.concat("disposition like '%".concat(dis).
+                "%'' and ")
+        }
+    }
+    sql = sql.slice(0, -4);
+    sql = sql.concat(";")
+
+
+    var mysql = req.app.get('mysql');
+    mysql.pool.query(sql, search, function(err, rows, fields) {
+        if (err) {
+            console.log(err);
+            // next(err);
+            res.status(500);
+            res.send('500');
+            return;
+        }
+        var re = {};
+        re.status = "success";
+        re.data = rows;
+        res.send(re);
+    });
+});
+//get profile by filters
+app.post('/profiles', function(req, res) {
+    var context = {};
+    var mysql = req.app.get('mysql');
+    mysql.pool.query('SELECT * FROM profile where profileID=?;', [req.params.profileId], function(err, rows, fields) {
+        if (err) {
+            console.log('this.sql', this.sql);
+            console.log(err);
+            // next(err);
+            res.status(500);
+            res.send('500');
+            return;
+        }
+        if (rows.length > 0)
+            res.send(rows[0]);
+        else {
+            var re = {};
+            re.status = "error";
+            re.reason = "Cannot found profile.";
+            re.code = 6001;
+            res.send(re);
+            return;
+        }
+    });
+});
 
 
 app.use(function(req, res) {
