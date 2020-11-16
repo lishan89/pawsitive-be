@@ -563,6 +563,7 @@ app.post('/profile/add', app.oauth.authenticate(), function(req, res) {
             res.send('500');
             return;
         }
+        console.log(req.body);
         if (rows.length > 0 && rows[0].isShelter == 1) {
 
             var inserts = [req.body.petName, req.body.type, req.body.shelterID, req.body.breedID, req.body.description, req.body.goodWithAnimal, req.body.goodWithChild, req.body.leashed];
@@ -588,6 +589,7 @@ app.post('/profile/add', app.oauth.authenticate(), function(req, res) {
 
             });
         } else {
+            console.log("Error");
             re.status = "error";
             re.reason = "You cannot add profile, please make sure you are shelter account.";
             re.code = 1001;
