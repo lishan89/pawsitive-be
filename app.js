@@ -566,8 +566,8 @@ app.post('/profile/add', app.oauth.authenticate(), function(req, res) {
         console.log(req.body);
         if (rows.length > 0 && rows[0].isShelter == 1) {
 
-            var inserts = [req.body.petName, req.body.type, req.body.shelterID, req.body.breedID, req.body.description, req.body.goodWithAnimal, req.body.goodWithChild, req.body.leashed];
-            var sql = "insert into Profiles (petName, type, shelterID, breedID, description, goodWithAnimal, goodWithChild, leashed) values (?, ?, ?, ?, ?, ?, ?, ?)";
+            var inserts = [req.body.petName, req.body.type, req.body.availability, req.body.shelterID, req.body.breedID, req.body.description, req.body.goodWithAnimal, req.body.goodWithChild, req.body.leashed];
+            var sql = "insert into Profiles (petName, type, availability, shelterID, breedID, description, goodWithAnimal, goodWithChild, leashed) values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             mysql.pool.query(sql, inserts, function(error, results, fields) {
 
                 if (error) {
