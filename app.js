@@ -567,7 +567,7 @@ app.post('/profile/add', app.oauth.authenticate(), function(req, res) {
         if (rows.length > 0 && rows[0].isShelter == 1) {
 
             var inserts = [req.body.petName, req.body.type, req.body.shelterID, req.body.breedID, req.body.description, req.body.goodWithAnimal, req.body.goodWithChild, req.body.leashed];
-            var sql = "insert into profiles (petName, type, shelterID, breedID, description, goodWithAnimal, goodWithChild, leashed) values (?, ?, ?, ?, ?, ?, ?, ?)";
+            var sql = "insert into Profiles (petName, type, shelterID, breedID, description, goodWithAnimal, goodWithChild, leashed) values (?, ?, ?, ?, ?, ?, ?, ?)";
             mysql.pool.query(sql, inserts, function(error, results, fields) {
 
                 if (error) {
@@ -581,6 +581,7 @@ app.post('/profile/add', app.oauth.authenticate(), function(req, res) {
                     return;
                 }
                 console.log(results);
+                console.log('this.sql', this.sql);
 
 
                 re.status = "success";
@@ -751,7 +752,7 @@ app.post('/profile/delete/:id', app.oauth.authenticate(), function(req, res) {
 app.post('/profiles', function(req, res) {
     var keys = Object.keys(req.body.filters);
     var search = [];
-    var sql = "select * from profiles where 1=1 and ";
+    var sql = "select * from Profiles where 1=1 and ";
     for (var key of keys) {
         sql.concat(key).concat("=? and ");
         search.push(req.body.filters[key]);
@@ -785,7 +786,7 @@ app.post('/profiles', function(req, res) {
 app.get('/profile/:profileId', function(req, res) {
     var context = {};
     var mysql = req.app.get('mysql');
-    mysql.pool.query('SELECT * FROM profile where profileID=?;', [req.params.profileId], function(err, rows, fields) {
+    mysql.pool.query('SELECT * FROM Profiles where profileID=?;', [req.params.profileId], function(err, rows, fields) {
         if (err) {
             console.log('this.sql', this.sql);
             console.log(err);
