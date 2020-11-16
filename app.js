@@ -8,9 +8,10 @@ app.use(cors());
 
 var bodyParser = require('body-parser');
 var dateFormat = require('dateformat');
-app.use(bodyParser.json()); // support json encoded bodies
+app.use(bodyParser.json({limit: '25mb'})); // support json encoded bodies
 app.use(bodyParser.urlencoded({
-    extended: true
+    extended: true,
+    limit: '25mb'
 })); // support url encoded bodies
 
 
@@ -19,11 +20,11 @@ app.set('port', 9813);
 app.set('mysql', mysql);
 
 
-// Add body parser.
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({
-    extended: false
-}));
+// // Add body parser.
+// app.use(bodyParser.json());
+// app.use(bodyParser.urlencoded({
+//     extended: false
+// }));
 
 // Add OAuth server.
 app.oauth = new oauthServer({
