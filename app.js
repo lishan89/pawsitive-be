@@ -565,8 +565,8 @@ app.post('/profile/add', app.oauth.authenticate(), function(req, res) {
         }
         if (rows.length > 0 && rows[0].isShelter == 1) {
 
-            var inserts = [req.body.petName, req.body.type, req.body.shelterID, req.body.breedID, req.body.description, req.body.disposition];
-            var sql = "insert into profiles (petName, type, shelterID, breedID, description, disposition) values (?, ?, ?, ?, ?, ?)";
+            var inserts = [req.body.petName, req.body.type, req.body.shelterID, req.body.breedID, req.body.description, req.body.goodWithAnimal, req.body.goodWithChild, req.body.leashed];
+            var sql = "insert into profiles (petName, type, shelterID, breedID, description, goodWithAnimal, goodWithChild, leashed) values (?, ?, ?, ?, ?, ?, ?, ?)";
             mysql.pool.query(sql, inserts, function(error, results, fields) {
 
                 if (error) {
@@ -588,8 +588,10 @@ app.post('/profile/add', app.oauth.authenticate(), function(req, res) {
 
             });
         } else {
-            res.status(401);
-            res.send('unauthrized');
+            re.status = "error";
+            re.reason = "You cannot add profile, please make sure you are shelter account.";
+            re.code = 1001;
+            res.send(re);
             return;
         }
 
@@ -655,15 +657,18 @@ app.post('/profile/edit/:id', app.oauth.authenticate(), function(req, res) {
 
                     });
                 } else {
-                    res.status(401);
-                    res.send('unauthrized');
+                    re.status = "error";
+                    re.reason = "You can only edit the profile you added.";
+                    re.code = 1001;
+                    res.send(re);
                     return;
                 }
             });
         } else {
-            res.status(401);
-            res.send('unauthrized');
-
+            re.status = "error";
+            re.reason = "You can only edit the profile you added.";
+            re.code = 1001;
+            res.send(re);
             return;
         }
 
@@ -721,15 +726,18 @@ app.post('/profile/delete/:id', app.oauth.authenticate(), function(req, res) {
 
                     });
                 } else {
-                    res.status(401);
-                    res.send('unauthrized');
+                    re.status = "error";
+                    re.reason = "You can only delete the profile you added.";
+                    re.code = 1001;
+                    res.send(re);
                     return;
                 }
             });
         } else {
-            res.status(401);
-            res.send('unauthrized');
-
+            re.status = "error";
+            re.reason = "You can only delete the profile you added.";
+            re.code = 1001;
+            res.send(re);
             return;
         }
 
@@ -738,20 +746,20 @@ app.post('/profile/delete/:id', app.oauth.authenticate(), function(req, res) {
 });
 
 //get one profile
-app.get('/profile/:profileId', function(req, res) {
+app.post('/profiles', function(req, res) {
     var keys = Object.keys(req.body.filters);
     var search = [];
-    var sql = "select * from profiles where ";
+    var sql = "select * from profiles where 1=1 and ";
     for (var key of keys) {
         sql.concat(key).concat("=? and ");
         search.push(req.body.filters[key]);
     }
 
-    if (Array.isArray(req.body.disposition)) {
-        for (var dis of req.body.disposition) {
-            sql = sql.concat("disposition like '%".concat(dis).concat("%' and "));
-        }
-    }
+    // if (Array.isArray(req.body.disposition)) {
+    //     for (var dis of req.body.disposition) {
+    //         sql = sql.concat("disposition like '%".concat(dis).concat("%' and "));
+    //     }
+    // }
     sql = sql.slice(0, -4);
     sql = sql.concat(";")
 
@@ -772,7 +780,7 @@ app.get('/profile/:profileId', function(req, res) {
     });
 });
 //get profile by filters
-app.post('/profiles', function(req, res) {
+app.get('/profile/:profileId', function(req, res) {
     var context = {};
     var mysql = req.app.get('mysql');
     mysql.pool.query('SELECT * FROM profile where profileID=?;', [req.params.profileId], function(err, rows, fields) {
