@@ -757,7 +757,8 @@ app.post('/profiles', function(req, res) {
     var search = [];
     var sql = "select * from Profiles where 1=1 and ";
     for (var key of keys) {
-        sql.concat(key).concat("=? and ");
+        sql = sql.concat(key);
+        sql = sql.concat("=? and ");
         search.push(req.body.filters[key]);
     }
     console.log(sql);
