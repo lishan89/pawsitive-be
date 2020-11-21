@@ -758,12 +758,13 @@ app.post('/profiles', function(req, res) {
         sql.concat(key).concat("=? and ");
         search.push(req.body.filters[key]);
     }
-
+    console.log(sql);
     // if (Array.isArray(req.body.disposition)) {
     //     for (var dis of req.body.disposition) {
     //         sql = sql.concat("disposition like '%".concat(dis).concat("%' and "));
     //     }
     // }
+    
     sql = sql.slice(0, -4);
     sql = sql.concat(";")
 
