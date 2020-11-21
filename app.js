@@ -751,7 +751,9 @@ app.post('/profile/delete/:id', app.oauth.authenticate(), function(req, res) {
 
 //get one profile
 app.post('/profiles', function(req, res) {
+    console.log(req.body.filters);
     var keys = Object.keys(req.body.filters);
+    console.log(keys);
     var search = [];
     var sql = "select * from Profiles where 1=1 and ";
     for (var key of keys) {
@@ -764,7 +766,7 @@ app.post('/profiles', function(req, res) {
     //         sql = sql.concat("disposition like '%".concat(dis).concat("%' and "));
     //     }
     // }
-    
+
     sql = sql.slice(0, -4);
     sql = sql.concat(";")
 
