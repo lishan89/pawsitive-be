@@ -351,7 +351,7 @@ app.post('/shelter/edit/:id', app.oauth.authenticate(), function(req, res) {
 app.get('/breeds', function(req, res) {
     var context = {};
     var mysql = req.app.get('mysql');
-    mysql.pool.query('SELECT * FROM Breeds where breedID=?;',[req.params.id], function(err, rows, fields) {
+    mysql.pool.query('SELECT * FROM Breeds;', function(err, rows, fields) {
         if (err) {
             console.log(err);
             // next(err);
@@ -367,7 +367,7 @@ app.get('/breeds', function(req, res) {
 app.get('/breed/:id', function(req, res) {
     var context = {};
     var mysql = req.app.get('mysql');
-    mysql.pool.query('SELECT * FROM Breeds;', function(err, rows, fields) {
+    mysql.pool.query('SELECT * FROM Breeds where breedID=?;',[req.params.id], function(err, rows, fields) {
         if (err) {
             console.log(err);
             // next(err);
