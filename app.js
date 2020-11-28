@@ -769,7 +769,30 @@ app.post('/profile/delete/:id', app.oauth.authenticate(), function(req, res) {
 
 });
 
-//get one profile
+//update profile, self
+app.post('/profile/adopt/:id', function(req, res) {
+    var re = {};
+    mysql.pool.query('update profiles set availability = ? where profileID=?;', [req.body.availability, req.params.id], function(err, rows, fields) {
+        if (err) {
+            console.log('this.sql', this.sql);
+            console.log(err);
+            // next(err);
+            res.status(500);
+            res.send('500');
+            return;
+        }
+        console.log(results);
+
+        re.status = "success";
+        re.profileID = req.params.id;
+        re.availability = req.body.availability;
+        res.send(re);
+
+    });
+
+});
+
+//get profiles by filters
 app.post('/profiles', function(req, res) {
     console.log(req.body.filters);
     var keys = Object.keys(req.body.filters);
