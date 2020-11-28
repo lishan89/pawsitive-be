@@ -780,8 +780,7 @@ app.post('/profile/adopt/:id', function(req, res) {
             res.status(500);
             res.send('500');
             return;
-        }
-        console.log(results);
+        } 
 
         re.status = "success";
         re.profileID = req.params.id;
